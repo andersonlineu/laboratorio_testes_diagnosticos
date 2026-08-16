@@ -21,6 +21,8 @@ version: "1.0.0"
 
 date-released: "2026-08-16"
 
+doi: "10.5281/zenodo.21966634"
+
 license: "MIT"
 
 url: "https://andersonlineu.github.io/laboratorio_testes_diagnosticos/"
