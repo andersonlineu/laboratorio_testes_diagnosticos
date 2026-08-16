@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+
+message: "Se utilizar esta tecnologia educativa, cite-a conforme as informações abaixo."
+
+type: software
+
+title: "Laboratório de Testes Diagnósticos: tecnologia educativa digital interativa"
+
+abstract: >-
+  Tecnologia educativa digital interativa desenvolvida para apoiar o ensino
+  e a aprendizagem sobre testes diagnósticos. A ferramenta integra simulação
+  clínica, tabela 2×2, cálculo de sensibilidade, especificidade, valores
+  preditivos, razões de verossimilhança, frequências naturais, comparação
+  entre cenários e nomograma de Fagan.
+
+authors:
+  - given-names: "Anderson Lineu Siqueira dos"
+    family-names: "Santos"
+
+version: "1.0.0"
+
+date-released: "2026-08-16"
+
+license: "MIT"
+
+url: "https://andersonlineu.github.io/laboratorio_testes_diagnosticos/"
+
+repository-code: "https://github.com/andersonlineu/laboratorio_testes_diagnosticos"
+
+keywords:
+  - "tecnologia educativa"
+  - "educação médica"
+  - "testes diagnósticos"
+  - "epidemiologia"
+  - "sensibilidade"
+  - "especificidade"
+  - "valores preditivos"
+  - "razão de verossimilhança"
+  - "tabela 2x2"
+  - "nomograma de Fagan"
