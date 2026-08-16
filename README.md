@@ -1,5 +1,7 @@
 # Laboratório de Testes Diagnósticos
 
+[![DOI](https://zenodo.org/badge/1335466423.svg)](https://doi.org/10.5281/zenodo.21966633)
+
 **Tecnologia educativa digital interativa para o ensino de testes diagnósticos**
 
 **Autor e desenvolvedor:** Anderson Lineu Siqueira dos Santos
