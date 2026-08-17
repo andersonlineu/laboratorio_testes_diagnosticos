@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123f73">
+  <title>Laboratório de Testes Diagnósticos</title>
+  <style>
+    :root {
+      --navy:#123f73; --navy-2:#0b2b50; --blue:#2268c9; --cyan:#e8f5fb;
+      --paper:#fff; --bg:#eef3f8; --ink:#182538; --muted:#607089; --line:#d8e2ee;
+      --green:#16834a; --green-bg:#eaf7ef; --amber:#b66008; --amber-bg:#fff3df;
+      --red:#c03e3e; --red-bg:#fff0f0; --violet:#6b43c7; --shadow:0 14px 40px rgba(20,54,90,.08);
+      --radius:20px;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; }
+    button,input,select { font:inherit; }
+    button { cursor:pointer; }
+    .topbar { background:linear-gradient(125deg,var(--navy-2),var(--navy)); color:#fff; padding:24px max(18px,calc((100% - 1240px)/2)); }
+    .eyebrow { margin:0 0 5px; color:#8ed5ff; font-size:.75rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    .topbar h1 { margin:0; font-size:clamp(1.65rem,4vw,2.6rem); line-height:1.08; letter-spacing:-.035em; }
+    .topbar .lead { max-width:760px; margin:10px 0 0; color:#dbeaff; font-size:.98rem; }
+    .tabs-wrap { position:sticky; top:0; z-index:15; background:rgba(255,255,255,.96); border-bottom:1px solid var(--line); backdrop-filter:blur(10px); }
+    .tabs { max-width:1240px; margin:auto; display:flex; gap:5px; overflow-x:auto; padding:9px 12px; scrollbar-width:none; }
+    .tab { flex:0 0 auto; border:0; border-radius:999px; padding:10px 15px; color:#52627a; background:transparent; font-weight:750; }
+    .tab:hover { background:#eef4fa; }
+    .tab.active { color:#fff; background:var(--navy); }
+    main { max-width:1240px; margin:0 auto; padding:24px 16px 60px; }
+    .panel { display:none; }
+    .panel.active { display:block; animation:fade .18s ease-out; }
+    @keyframes fade { from{opacity:.35;transform:translateY(4px)} }
+    .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; margin:0 0 17px; }
+    .section-head h2 { margin:0; font-size:clamp(1.35rem,3vw,1.9rem); color:var(--navy-2); letter-spacing:-.025em; }
+    .section-head p { margin:4px 0 0; color:var(--muted); max-width:720px; }
+    .card { background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .card-pad { padding:20px; }
+    .grid-main { display:grid; grid-template-columns:minmax(280px,360px) 1fr; gap:18px; align-items:start; }
+    .controls { position:sticky; top:72px; }
+    .controls h3,.card h3 { margin:0 0 6px; color:var(--navy-2); font-size:1.05rem; }
+    .micro { margin:0; color:var(--muted); font-size:.82rem; }
+    .presets { display:flex; flex-wrap:wrap; gap:7px; margin:15px 0 18px; }
+    .chip { border:1px solid #b9cce1; color:var(--navy); background:#f6faff; border-radius:999px; padding:7px 10px; font-size:.78rem; font-weight:750; }
+    .chip:hover,.chip.active { background:#e2effd; border-color:#75a5db; }
+    .field { padding:14px 0; border-top:1px solid #edf1f6; }
+    .field:first-of-type { border-top:0; }
+    .field-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .field label { font-weight:760; font-size:.9rem; }
+    .number-wrap { display:flex; align-items:center; gap:4px; border:1px solid #bfcede; border-radius:9px; background:#fff; padding:3px 7px; }
+    .number-wrap input { width:66px; border:0; outline:0; text-align:right; font-weight:800; color:var(--navy); background:transparent; }
+    .number-wrap.wide input { width:82px; }
+    input[type=range] { width:100%; accent-color:var(--blue); }
+    .scale-labels { display:flex; justify-content:space-between; color:#8794a6; font-size:.69rem; margin-top:1px; }
+    .action-row { display:flex; gap:8px; margin-top:14px; }
+    .btn { border:0; border-radius:11px; padding:10px 13px; font-weight:800; background:var(--navy); color:#fff; }
+    .btn:hover { filter:brightness(1.07); }
+    .btn.secondary { background:#e9f1fa; color:var(--navy); }
+    .btn.green { background:var(--green); }
+    .btn.import-sim-btn {
+      padding:12px 17px;
+      background:linear-gradient(135deg,var(--navy),#1763a6);
+      color:#fff;
+      font-size:.9rem;
+      font-weight:900;
+      box-shadow:0 8px 18px rgba(15,64,112,.22);
+      transition:transform .18s ease,box-shadow .18s ease;
+    }
+    .btn.import-sim-btn:hover { transform:translateY(-1px); box-shadow:0 10px 22px rgba(15,64,112,.28); }
+    .right-stack { display:grid; gap:16px; min-width:0; }
+    .metric-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+    .metric { padding:15px; min-height:116px; border:1px solid var(--line); border-radius:16px; background:#fff; }
+    .metric .label { color:#5f6d82; font-size:.72rem; font-weight:850; text-transform:uppercase; line-height:1.25; }
+    .metric .value { margin:6px 0 2px; color:var(--navy); font-size:clamp(1.35rem,2.6vw,1.85rem); font-weight:900; letter-spacing:-.03em; }
+    .metric .hint { color:#718096; font-size:.72rem; }
+    .metric.green .value{color:var(--green)} .metric.amber .value{color:var(--amber)} .metric.violet .value{color:var(--violet)}
+    .result-card { overflow:hidden; }
+    .result-card header { padding:17px 20px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; align-items:center; }
+    .result-card header h3 { margin:0; }
+    .toggle { display:flex; background:#eef3f8; border-radius:12px; padding:4px; }
+    .toggle button { border:0; border-radius:9px; padding:8px 12px; background:transparent; color:#5a687c; font-weight:800; }
+    .toggle button.active.pos { background:var(--green); color:white; }
+    .toggle button.active.neg { background:var(--violet); color:white; }
+    .result-body { display:grid; grid-template-columns:160px 1fr; gap:18px; padding:20px; align-items:center; }
+    .big-prob { text-align:center; border-radius:18px; padding:20px 10px; background:var(--green-bg); color:var(--green); }
+    .big-prob.negative { background:#f2edff; color:var(--violet); }
+    .big-prob strong { display:block; font-size:2.5rem; letter-spacing:-.05em; }
+    .big-prob span { font-size:.75rem; font-weight:850; text-transform:uppercase; }
+    .interpretation { font-size:1.02rem; }
+    .interpretation strong { color:var(--navy-2); }
+    .formula-line { color:var(--muted); font-size:.8rem; margin-top:7px; }
+    .natural-grid { display:grid; grid-template-columns:minmax(340px,61fr) minmax(260px,39fr); gap:16px; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:separate; border-spacing:0; min-width:440px; }
+    th,td { padding:11px 12px; text-align:center; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+    thead th { background:#edf4fb; color:var(--navy); font-size:.8rem; }
+    th:first-child,td:first-child { text-align:left; font-weight:800; }
+    tr:last-child td { border-bottom:0; }
+    th:last-child,td:last-child { border-right:0; }
+    .vp{background:#e8f7ef;color:#116e3d;font-weight:850}.fp{background:#fff1e3;color:#a04c00;font-weight:850}.fn{background:#fff0f0;color:#a62e2e;font-weight:850}.vn{background:#ecf3ff;color:#245ba9;font-weight:850}
+    .outcome { padding:18px; }
+    .outcome-strip { display:flex; height:48px; overflow:hidden; border-radius:12px; margin:15px 0 13px; background:#eef2f6; }
+    .segment { min-width:0; transition:width .25s ease; display:flex; align-items:center; justify-content:center; color:white; font-size:.7rem; font-weight:900; overflow:hidden; white-space:nowrap; }
+    .segment.vp{background:#259a5c}.segment.fp{background:#d88123}.segment.fn{background:#d75a5a}.segment.vn{background:#3a73c1}
+    .legend { display:grid; grid-template-columns:1fr 1fr; gap:7px; font-size:.77rem; color:#59687d; }
+    .dot { display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:6px; }
+    details { border:1px solid var(--line); border-radius:15px; background:#fff; }
+    summary { padding:15px 18px; font-weight:850; color:var(--navy); cursor:pointer; }
+    details .detail-body { padding:0 18px 18px; color:#4e5e73; }
+    .formula-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+    .formula { background:#f4f7fa; padding:10px 12px; border-radius:10px; font-size:.85rem; }
+    .notice { border-left:4px solid #dc972e; border-radius:12px; background:var(--amber-bg); padding:13px 15px; color:#71420d; font-size:.84rem; }
+    .compare { display:none; }
+    .compare.show { display:block; }
+    .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .scenario { border:2px solid; border-radius:17px; padding:18px; }
+    .scenario-a { border-color:#79a9df; background:linear-gradient(145deg,#eef6ff,#f8fbff); }
+    .scenario-b { border-color:#72be94; background:linear-gradient(145deg,#edf9f2,#f9fdfb); }
+    .scenario-title { display:flex; align-items:center; gap:8px; margin-bottom:13px; font-size:1.12rem; font-weight:900; }
+    .scenario-a .scenario-title { color:#185ba8; }
+    .scenario-b .scenario-title { color:#147345; }
+    .scenario-letter { display:inline-grid; place-items:center; width:31px; height:31px; border-radius:9px; color:#fff; font-size:1rem; }
+    .scenario-a .scenario-letter { background:#2268c9; }
+    .scenario-b .scenario-letter { background:#16834a; }
+    .scenario-params,.scenario-results { display:grid; gap:8px; }
+    .scenario-params { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .scenario-results { grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:10px; padding-top:10px; border-top:1px solid rgba(44,84,120,.16); }
+    .compare-value { min-width:0; border-radius:11px; padding:9px; background:rgba(255,255,255,.72); }
+    .compare-value span { display:block; color:#637187; font-size:.65rem; font-weight:850; line-height:1.15; text-transform:uppercase; }
+    .compare-value strong { display:block; margin-top:3px; color:var(--navy-2); font-size:1.34rem; line-height:1.05; letter-spacing:-.03em; }
+    .scenario-results .compare-value strong { font-size:1.48rem; }
+    .change-marker { display:inline-block!important; width:max-content; margin-top:5px; padding:2px 6px; border-radius:999px; font-size:.61rem!important; text-transform:none!important; }
+    .change-marker.same { color:#406079; background:#e5edf4; }
+    .change-marker.up { color:#116d3e; background:#dff3e8; }
+    .change-marker.down { color:#a04420; background:#f9e7df; }
+    .compare-insight { display:none; margin-top:14px; padding:13px 15px; border-radius:12px; background:#fff8db; border:1px solid #ebcd63; color:#6d5100; font-size:.9rem; }
+    .compare-insight.show { display:block; }
+
+    /* Aula */
+    .lesson-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:16px; }
+    .case-list { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+    .case { text-align:left; border:1px solid var(--line); background:#f8fbff; border-radius:14px; padding:14px; color:var(--ink); }
+    .case:hover { border-color:#75a5db; transform:translateY(-1px); }
+    .case b { color:var(--navy); display:block; margin-bottom:4px; }
+    .case span { color:var(--muted); font-size:.77rem; }
+    .rule-table { min-width:0; }
+    .rule-table td { text-align:left; font-size:.83rem; }
+    .challenge { background:linear-gradient(145deg,#0f3a69,#164f88); color:#fff; border:0; }
+    .challenge h3 { color:#fff; }
+    .challenge .micro { color:#cfe5fb; }
+    .challenge select { width:100%; margin:7px 0 12px; border:1px solid #6e96bb; border-radius:9px; padding:9px; background:#fff; color:#1a2a3c; }
+    .answer-box { display:none; margin-top:14px; padding:13px; border-radius:12px; background:rgba(255,255,255,.12); }
+    .answer-box.show { display:block; }
+    .answer-box.good { outline:2px solid #78dc9f; }
+    .answer-box.partial { outline:2px solid #ffc36a; }
+
+    /* 2x2 */
+    .direct-layout { display:grid; grid-template-columns:minmax(556px,1.02fr) minmax(0,1.33fr); gap:16px; }
+    .direct-table-wrap { margin-top:16px; overflow-x:auto; border:1px solid var(--line); border-radius:15px; }
+    .direct-table { min-width:510px; border:0; border-collapse:separate; border-spacing:0; }
+    .direct-table th,.direct-table td { padding:10px; text-align:center; }
+    .direct-table .index-title,.direct-table .reference-title { color:#fff; background:var(--navy); font-weight:900; }
+    .direct-table .index-title { width:112px; vertical-align:middle; }
+    .direct-table .reference-title { letter-spacing:.02em; }
+    .direct-table .column-title { background:#e7f0fa; color:var(--navy-2); font-size:.72rem; line-height:1.2; }
+    .direct-table .row-label { width:112px; background:#edf4fb; color:var(--navy-2); text-align:left; font-size:.8rem; }
+    .direct-table .input-cell { min-width:112px; }
+    .direct-table .cell-code { display:block; margin-bottom:5px; font-size:.68rem; font-weight:900; }
+    .direct-table input { width:100%; min-width:74px; border:1px solid #aebfd2; border-radius:9px; padding:9px 7px; color:var(--ink); background:#fff; font-weight:850; text-align:center; }
+    .direct-table .total-cell { color:var(--navy-2); background:#f3f6f9; font-weight:900; }
+    .direct-table .total-row th,.direct-table .total-row td { color:var(--navy-2); background:#e8eef5; font-weight:900; }
+    .direct-result { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    .direct-layout > .right-stack { align-content:start; }
+    .direct-interpretation-card { padding:0; overflow:hidden; align-self:start; }
+    .direct-interpretation-card summary {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:17px 19px;
+      border-left:5px solid var(--blue);
+      background:linear-gradient(90deg,#e4f0fc 0%,#f5f9fe 100%);
+      color:var(--navy-2);
+      font-size:1.08rem;
+      font-weight:900;
+      cursor:pointer;
+      list-style:none;
+    }
+    .direct-interpretation-card summary::-webkit-details-marker { display:none; }
+    .direct-interpretation-card summary::after {
+      content:"▾";
+      display:grid;
+      place-items:center;
+      flex:0 0 29px;
+      width:29px;
+      height:29px;
+      border-radius:50%;
+      background:var(--navy);
+      color:#fff;
+      font-size:.9rem;
+      transition:transform .2s ease;
+    }
+    .direct-interpretation-card summary:hover { background:#dceafa; }
+    .direct-interpretation-card summary:focus-visible { outline:3px solid #78aee5; outline-offset:-3px; }
+    .direct-interpretation-card[open] summary { border-bottom:1px solid var(--line); }
+    .direct-interpretation-card[open] summary::after { transform:rotate(180deg); }
+    .direct-interpretation-content { padding:3px 19px 18px; }
+    .direct-interpretations { margin:10px 0 0; padding-left:1.35rem; display:grid; gap:9px; }
+    .direct-interpretations li { padding-left:3px; line-height:1.5; }
+    .direct-interpretations strong { color:var(--navy-2); }
+
+    /* Fagan */
+    .fagan-layout { display:grid; grid-template-columns:300px 1fr; gap:16px; align-items:start; }
+    .fagan-controls .quick-lr { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
+    .fagan-controls .quick-lr button { border:1px solid #a9bfda; background:#f5f9fd; color:var(--navy); border-radius:10px; padding:9px; font-weight:850; }
+    .fagan-result { margin-top:12px; padding:15px; border-radius:14px; background:var(--cyan); text-align:center; }
+    .fagan-result strong { display:block; color:var(--navy); font-size:2rem; }
+    .canvas-wrap { overflow-x:auto; background:#f9fcfe; border-radius:18px; border:1px solid var(--line); }
+    canvas { display:block; width:100%; min-width:720px; height:auto; }
+    @media (max-width:980px){
+      .grid-main,.lesson-grid,.direct-layout,.fagan-layout{grid-template-columns:1fr}.controls{position:static}.metric-grid{grid-template-columns:repeat(2,1fr)}.natural-grid{grid-template-columns:1fr}.case-list{grid-template-columns:1fr 1fr 1fr}
+    }
+    @media (max-width:620px){
+      main{padding:17px 10px 45px}.topbar{padding:20px 17px}.topbar .lead{font-size:.88rem}.tabs{padding:7px 8px}.tab{font-size:.82rem;padding:9px 11px}.card-pad{padding:15px}.metric-grid{grid-template-columns:1fr 1fr;gap:7px}.metric{padding:12px;min-height:104px}.result-body{grid-template-columns:1fr;padding:15px}.big-prob{padding:13px}.natural-grid{display:block}.outcome{margin-top:13px}.formula-grid,.compare-grid,.direct-result{grid-template-columns:1fr}.scenario-params{grid-template-columns:1fr 1fr 1fr}.compare-value{padding:8px}.compare-value strong{font-size:1.22rem}.scenario-results .compare-value strong{font-size:1.36rem}.case-list{grid-template-columns:1fr}.section-head{display:block}.section-head .btn{margin-top:10px}.legend{grid-template-columns:1fr}.fagan-layout{gap:11px}
+    }
+    @media print { .tabs-wrap,.controls,.action-row,.challenge{display:none!important}.panel{display:block!important;break-before:page}body{background:white}.card{box-shadow:none} }
+
+    /* Rodapé acadêmico */
+    .project-footer {
+      background:var(--navy-2);
+      color:#dbeaff;
+      padding:20px 16px;
+    }
+    .project-footer-inner {
+      max-width:1240px;
+      margin:0 auto;
+    }
+    .project-footer h2 {
+      margin:0 0 6px;
+      color:#fff;
+      font-size:1.05rem;
+    }
+    .project-footer p {
+      margin:6px 0;
+    }
+    .project-footer .citation {
+      max-width:960px;
+      font-size:.84rem;
+      line-height:1.45;
+    }
+    .project-footer .citation a {
+      color:#9edcff;
+    }
+    .footer-links {
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+      margin:10px 0 8px;
+    }
+    .footer-links a {
+      display:inline-flex;
+      padding:8px 12px;
+      border:1px solid #6c91b6;
+      border-radius:9px;
+      color:#fff;
+      text-decoration:none;
+      font-size:.8rem;
+      font-weight:800;
+    }
+    .footer-links a:hover {
+      background:#164f88;
+    }
+    .project-footer .license {
+      color:#aec4da;
+      font-size:.72rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <p class="eyebrow">Aprendizagem clínica interativa</p>
+    <h1>Laboratório de Testes Diagnósticos</h1>
+    <p class="lead">Professor Anderson Lineu</p>
+  </header>
+
+  <div class="tabs-wrap" role="navigation" aria-label="Áreas do aplicativo">
+    <div class="tabs">
+      <button class="tab active" data-tab="simulacao">Simulação clínica</button>
+      <button class="tab" data-tab="tabela">Tabela 2×2</button>
+      <button class="tab" data-tab="fagan">Nomograma de Fagan</button>
+    </div>
+  </div>
+
+  <main>
+    <section class="panel active" id="simulacao">
+      <div class="section-head">
+        <div><h2>Do desempenho do teste à decisão clínica</h2><p>Altere os parâmetros e acompanhe todas as medidas em tempo real.</p></div>
+        <button class="btn secondary" id="resetSim">Restaurar exemplo</button>
+      </div>
+      <div class="grid-main">
+        <aside class="card card-pad controls">
+          <h3>Parâmetros do cenário</h3>
+          <p class="micro">Os cálculos usam valores esperados para uma população semelhante.</p>
+          <div class="presets">
+            <button class="chip" data-preset="triagem">Triagem</button>
+            <button class="chip" data-preset="confirmacao">Confirmação</button>
+            <button class="chip" data-preset="equilibrado">Equilibrado</button>
+          </div>
+
+          <div class="field">
+            <div class="field-top"><label for="prevRange">Probabilidade pré-teste</label><span class="number-wrap"><input id="prevNumber" type="number" min="0.1" max="99.9" step="0.1" value="20"><span>%</span></span></div>
+            <input id="prevRange" type="range" min="0.1" max="99.9" step="0.1" value="20">
+            <div class="scale-labels"><span>rara</span><span>50%</span><span>frequente</span></div>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="sensRange">Sensibilidade</label><span class="number-wrap"><input id="sensNumber" type="number" min="0.1" max="99.9" step="0.1" value="90"><span>%</span></span></div>
+            <input id="sensRange" type="range" min="0.1" max="99.9" step="0.1" value="90">
+            <div class="scale-labels"><span>mais falsos negativos</span><span>menos</span></div>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="specRange">Especificidade</label><span class="number-wrap"><input id="specNumber" type="number" min="0.1" max="99.9" step="0.1" value="90"><span>%</span></span></div>
+            <input id="specRange" type="range" min="0.1" max="99.9" step="0.1" value="90">
+            <div class="scale-labels"><span>mais falsos positivos</span><span>menos</span></div>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="popNumber">População simulada</label><span class="number-wrap wide"><input id="popNumber" type="number" min="10" max="1000000" step="10" value="1000"><span>pessoas</span></span></div>
+          </div>
+          <div class="action-row">
+            <button class="btn" id="saveA">Guardar cenário A</button>
+          </div>
+        </aside>
+
+        <div class="right-stack">
+          <div class="metric-grid" aria-live="polite">
+            <article class="metric green"><div class="label">Valor preditivo positivo</div><div class="value" id="mPPV">—</div><div class="hint">P(doença | teste +)</div></article>
+            <article class="metric violet"><div class="label">Valor preditivo negativo</div><div class="value" id="mNPV">—</div><div class="hint">P(sem doença | teste −)</div></article>
+            <article class="metric"><div class="label">Razão de verossimilhança +</div><div class="value" id="mLRP">—</div><div class="hint">quanto um positivo pesa</div></article>
+            <article class="metric amber"><div class="label">Razão de verossimilhança −</div><div class="value" id="mLRN">—</div><div class="hint">quanto um negativo pesa</div></article>
+          </div>
+
+          <article class="card result-card">
+            <header><h3>Interpretação do resultado individual</h3><div class="toggle"><button class="active pos" data-result="positive">Teste positivo</button><button class="neg" data-result="negative">Teste negativo</button></div></header>
+            <div class="result-body">
+              <div class="big-prob" id="resultBadge"><strong id="resultProb">—</strong><span id="resultLabel">probabilidade pós-teste</span></div>
+              <div><div class="interpretation" id="interpretation">—</div></div>
+            </div>
+          </article>
+
+          <div class="natural-grid">
+            <article class="card card-pad">
+              <h3>O que ocorre nesta população</h3>
+              <p class="micro" id="tableIntro">Frequências naturais esperadas.</p>
+              <div class="table-wrap" style="margin-top:13px">
+                <table aria-label="Tabela de contingência 2 por 2">
+                  <thead><tr><th>Resultado</th><th>Doença</th><th>Sem doença</th><th>Total</th></tr></thead>
+                  <tbody>
+                    <tr><td>Teste positivo</td><td class="vp" id="cVP">—</td><td class="fp" id="cFP">—</td><td id="cPos">—</td></tr>
+                    <tr><td>Teste negativo</td><td class="fn" id="cFN">—</td><td class="vn" id="cVN">—</td><td id="cNeg">—</td></tr>
+                    <tr><td>Total</td><td id="cD">—</td><td id="cND">—</td><td id="cN">—</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+            <article class="card outcome">
+              <h3>Mapa dos desfechos</h3>
+              <p class="micro">Cada cor é uma parcela da população simulada.</p>
+              <div class="outcome-strip" aria-label="Distribuição dos quatro desfechos">
+                <div class="segment vp" id="sVP">VP</div><div class="segment fp" id="sFP">FP</div><div class="segment fn" id="sFN">FN</div><div class="segment vn" id="sVN">VN</div>
+              </div>
+              <div class="legend"><span><i class="dot" style="background:#259a5c"></i><b id="lVP">—</b> verdadeiros positivos</span><span><i class="dot" style="background:#d88123"></i><b id="lFP">—</b> falsos positivos</span><span><i class="dot" style="background:#d75a5a"></i><b id="lFN">—</b> falsos negativos</span><span><i class="dot" style="background:#3a73c1"></i><b id="lVN">—</b> verdadeiros negativos</span></div>
+            </article>
+          </div>
+
+          <article class="card card-pad compare" id="compareCard"><h3>Cenário A × cenário atual</h3><p class="micro">Mude os controles para criar o cenário B e observe o que mudou ou permaneceu igual.</p><div class="compare-grid" style="margin-top:13px"><div class="scenario scenario-a" id="scenarioA"></div><div class="scenario scenario-b" id="scenarioB"></div></div><div class="compare-insight" id="compareInsight"></div></article>
+
+          <details><summary>Entenda os cálculos e veja outras medidas</summary><div class="detail-body"><div class="formula-grid">
+            <div class="formula"><b>VPP</b> = VP ÷ (VP + FP)</div><div class="formula"><b>VPN</b> = VN ÷ (VN + FN)</div>
+            <div class="formula"><b>RV+</b> = sensibilidade ÷ (1 − especificidade)</div><div class="formula"><b>RV−</b> = (1 − sensibilidade) ÷ especificidade</div>
+            <div class="formula"><b>Acurácia</b> = (VP + VN) ÷ total = <strong id="mAcc">—</strong></div><div class="formula"><b>Taxa de falso positivo</b> = 1 − especificidade = <strong id="mFPR">—</strong></div>
+            <div class="formula"><b>Taxa de falso negativo</b> = 1 − sensibilidade = <strong id="mFNR">—</strong></div><div class="formula"><b>Probabilidade de doença após negativo</b> = 1 − VPN = <strong id="mResidual">—</strong></div>
+          </div></div></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tabela">
+      <div class="section-head"><div><h2>Calculadora por tabela 2×2</h2><p>Insira os quatro desfechos observados em um estudo e obtenha as medidas diretamente.</p></div><button class="btn import-sim-btn" id="importSim">Importar dados da simulação</button></div>
+      <div class="direct-layout">
+        <article class="card card-pad">
+          <h3>Dados observados</h3><p class="micro">Use números inteiros. Nenhuma célula pode ser negativa.</p>
+          <div class="direct-table-wrap">
+            <table class="direct-table" aria-label="Tabela 2 por 2 entre teste índice e teste de referência">
+              <thead>
+                <tr><th class="index-title" rowspan="2">Teste índice</th><th class="reference-title" colspan="3">Teste de referência</th></tr>
+                <tr><th class="column-title">Doença presente</th><th class="column-title">Doença ausente</th><th class="column-title">Total</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th class="row-label">Positivo</th>
+                  <td class="input-cell vp"><label class="cell-code" for="dVP">VP</label><input id="dVP" aria-label="Verdadeiro positivo" type="number" min="0" step="1"></td>
+                  <td class="input-cell fp"><label class="cell-code" for="dFP">FP</label><input id="dFP" aria-label="Falso positivo" type="number" min="0" step="1"></td>
+                  <td class="total-cell" id="dPosTotal"></td>
+                </tr>
+                <tr>
+                  <th class="row-label">Negativo</th>
+                  <td class="input-cell fn"><label class="cell-code" for="dFN">FN</label><input id="dFN" aria-label="Falso negativo" type="number" min="0" step="1"></td>
+                  <td class="input-cell vn"><label class="cell-code" for="dVN">VN</label><input id="dVN" aria-label="Verdadeiro negativo" type="number" min="0" step="1"></td>
+                  <td class="total-cell" id="dNegTotal"></td>
+                </tr>
+                <tr class="total-row">
+                  <th>Total</th><td id="dDiseaseTotal"></td><td id="dNoDiseaseTotal"></td><td id="dGrandTotal"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="notice" style="margin-top:14px">Sensibilidade e especificidade são condicionadas ao estado da doença; VPP e VPN são condicionados ao resultado do teste.</div>
+        </article>
+        <div class="right-stack">
+          <div class="direct-result">
+            <article class="metric"><div class="label">Sensibilidade</div><div class="value" id="dSens"></div><div class="hint">VP ÷ (VP + FN)</div></article>
+            <article class="metric"><div class="label">Especificidade</div><div class="value" id="dSpec"></div><div class="hint">VN ÷ (VN + FP)</div></article>
+            <article class="metric green"><div class="label">VPP</div><div class="value" id="dPPV"></div><div class="hint">VP ÷ positivos</div></article>
+            <article class="metric violet"><div class="label">VPN</div><div class="value" id="dNPV"></div><div class="hint">VN ÷ negativos</div></article>
+            <article class="metric"><div class="label">RV+</div><div class="value" id="dLRP"></div><div class="hint">sens ÷ (1 − esp)</div></article>
+            <article class="metric amber"><div class="label">RV−</div><div class="value" id="dLRN"></div><div class="hint">(1 − sens) ÷ esp</div></article>
+          </div>
+          <details class="card direct-interpretation-card">
+            <summary>Interpretação:</summary>
+            <div class="direct-interpretation-content">
+              <ol class="direct-interpretations" id="directText" aria-live="polite"></ol>
+              <div class="formula-line" id="directExtra"></div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="fagan">
+      <div class="section-head"><div><h2>Nomograma de Fagan interativo</h2><p>Uma única reta liga a probabilidade pré-teste à RV e encontra a probabilidade pós-teste.</p></div></div>
+      <div class="fagan-layout">
+        <article class="card card-pad fagan-controls">
+          <h3>Defina os pontos</h3>
+          <div class="field"><div class="field-top"><label for="faganPre">Pré-teste</label><span class="number-wrap"><input id="faganPre" type="number" min="0.1" max="99" step="0.1" value="20"><span>%</span></span></div><input id="faganPreRange" type="range" min="0.1" max="99" step="0.1" value="20"></div>
+          <div class="field"><div class="field-top"><label for="faganLR">Razão de verossimilhança</label><span class="number-wrap wide"><input id="faganLR" type="number" min="0.001" max="1000" step="0.001" value="9"></span></div><input id="faganLRRange" type="range" min="-3" max="3" step="0.001" value="0.954"><div class="scale-labels"><span>0,001</span><span>1</span><span>1000</span></div></div>
+          <div class="quick-lr"><button id="useLRP">Usar RV+ atual</button><button id="useLRN">Usar RV− atual</button></div>
+          <div class="fagan-result"><span>Probabilidade pós-teste</span><strong id="faganPost">—</strong></div>
+        </article>
+        <article class="canvas-wrap"><canvas id="faganCanvas" width="900" height="860" aria-label="Nomograma de Fagan com linha dinâmica"></canvas></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="project-footer">
+    <div class="project-footer-inner">
+      <h2>Código-fonte | Citação</h2>
+
+      <p class="citation">
+        SANTOS, Anderson Lineu Siqueira dos.
+        <em>Laboratório de Testes Diagnósticos: tecnologia educativa digital interativa</em>.
+        v. 1.0.0. Zenodo, 2026.
+        <a href="https://doi.org/10.5281/zenodo.21966634"
+           target="_blank" rel="noopener">
+          DOI: 10.5281/zenodo.21966634
+        </a>.
+      </p>
+
+      <nav class="footer-links" aria-label="Links do projeto">
+        <a href="https://github.com/andersonlineu/laboratorio_testes_diagnosticos"
+           target="_blank" rel="noopener">
+          Código-fonte no GitHub
+        </a>
+
+        <a href="https://doi.org/10.5281/zenodo.21966634"
+           target="_blank" rel="noopener">
+          Registro no Zenodo
+        </a>
+      </nav>
+
+      <p class="license">Versão 1.0.0 · Licença MIT</p>
+    </div>
+  </footer>
+
+  <script>
+  (() => {
+    const $ = id => document.getElementById(id);
+    const clamp = (x,a,b) => Math.min(b,Math.max(a,Number(x)));
+    const pct = x => Number.isFinite(x) ? (x*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%' : '—';
+    const num = (x,d=2) => Number.isFinite(x) ? x.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:d}) : '—';
+    const count = x => Number.isFinite(x) ? x.toLocaleString('pt-BR',{maximumFractionDigits:Number.isInteger(x)?0:1}) : '—';
+    const countInteger = x => Number.isFinite(x) ? Math.round(x).toLocaleString('pt-BR',{maximumFractionDigits:0}) : '—';
+    const get = id => Number($(id).value);
+    let resultType = 'positive';
+    let savedA = null;
+    let current = null;
+
+    function calculate(p,se,sp,N){
+      const diseased=N*p, non=N*(1-p), vp=diseased*se, fn=diseased*(1-se), vn=non*sp, fp=non*(1-sp);
+      const ppv=vp/(vp+fp), npv=vn/(vn+fn), lrp=se/(1-sp), lrn=(1-se)/sp;
+      return {p,se,sp,N,diseased,non,vp,fn,vn,fp,ppv,npv,lrp,lrn,acc:(vp+vn)/N,fpr:1-sp,fnr:1-se,residual:1-npv};
+    }
+    function integerOutcomeCounts(c){
+      const values=[c.vp,c.fp,c.fn,c.vn], target=Math.round(c.N);
+      const rounded=values.map(Math.floor), remainder=target-rounded.reduce((sum,value)=>sum+value,0);
+      values.map((value,index)=>({index,fraction:value-Math.floor(value)}))
+        .sort((a,b)=>b.fraction-a.fraction)
+        .slice(0,remainder)
+        .forEach(item=>rounded[item.index]++);
+      return {vp:rounded[0],fp:rounded[1],fn:rounded[2],vn:rounded[3]};
+    }
+    function syncPair(rangeId,numberId,callback){
+      $(rangeId).addEventListener('input',()=>{ $(numberId).value=$(rangeId).value; callback(); });
+      $(numberId).addEventListener('input',()=>{ const el=$(numberId); if(el.value==='')return; el.value=clamp(el.value,Number(el.min),Number(el.max)); $(rangeId).value=el.value; callback(); });
+    }
+    function changeMarker(value,base){
+      if(!base)return '';
+      const difference=value-base;
+      if(Math.abs(difference)<1e-10)return '<span class="change-marker same">= sem alteração</span>';
+      return `<span class="change-marker ${difference>0?'up':'down'}">${difference>0?'↑ aumentou':'↓ diminuiu'}</span>`;
+    }
+    function compareValue(label,value,raw,baseRaw){
+      return `<div class="compare-value"><span>${label}</span><strong>${value}</strong>${changeMarker(raw,baseRaw)}</div>`;
+    }
+    function scenarioHTML(label,c,base){
+      const letter=label.includes('A')?'A':'B';
+      return `<div class="scenario-title"><span class="scenario-letter">${letter}</span>${label}</div>
+        <div class="scenario-params">
+          ${compareValue('Pré-teste',pct(c.p),c.p,base&&base.p)}
+          ${compareValue('Sensibilidade',pct(c.se),c.se,base&&base.se)}
+          ${compareValue('Especificidade',pct(c.sp),c.sp,base&&base.sp)}
+        </div>
+        <div class="scenario-results">
+          ${compareValue('VPP',pct(c.ppv),c.ppv,base&&base.ppv)}
+          ${compareValue('VPN',pct(c.npv),c.npv,base&&base.npv)}
+          ${compareValue('RV+',num(c.lrp),c.lrp,base&&base.lrp)}
+          ${compareValue('RV−',num(c.lrn,3),c.lrn,base&&base.lrn)}
+        </div>`;
+    }
+    function updateSim(){
+      const p=clamp(get('prevNumber'),.1,99.9)/100, se=clamp(get('sensNumber'),.1,99.9)/100, sp=clamp(get('specNumber'),.1,99.9)/100, N=Math.max(10,get('popNumber')||1000);
+      current=calculate(p,se,sp,N);
+      const tableCounts=integerOutcomeCounts(current);
+      $('mPPV').textContent=pct(current.ppv); $('mNPV').textContent=pct(current.npv); $('mLRP').textContent=num(current.lrp); $('mLRN').textContent=num(current.lrn,3);
+      $('mAcc').textContent=pct(current.acc); $('mFPR').textContent=pct(current.fpr); $('mFNR').textContent=pct(current.fnr); $('mResidual').textContent=pct(current.residual);
+      $('cVP').textContent=countInteger(tableCounts.vp); $('cFP').textContent=countInteger(tableCounts.fp); $('cFN').textContent=countInteger(tableCounts.fn); $('cVN').textContent=countInteger(tableCounts.vn);
+      $('cPos').textContent=countInteger(tableCounts.vp+tableCounts.fp); $('cNeg').textContent=countInteger(tableCounts.fn+tableCounts.vn); $('cD').textContent=countInteger(tableCounts.vp+tableCounts.fn); $('cND').textContent=countInteger(tableCounts.fp+tableCounts.vn); $('cN').textContent=countInteger(tableCounts.vp+tableCounts.fp+tableCounts.fn+tableCounts.vn);
+      $('tableIntro').textContent=`Em ${countInteger(N)} pessoas semelhantes, os valores abaixo são esperados, não observações individuais.`;
+      const integerMap={VP:tableCounts.vp,FP:tableCounts.fp,FN:tableCounts.fn,VN:tableCounts.vn};
+      [['VP','vp'],['FP','fp'],['FN','fn'],['VN','vn']].forEach(([tag,key])=>{ $('s'+tag).style.width=(current[key]/N*100)+'%'; $('l'+tag).textContent=countInteger(integerMap[tag]); $('s'+tag).textContent=current[key]/N>.045?tag:''; });
+      if(savedA){
+        $('compareCard').classList.add('show');
+        $('scenarioA').innerHTML=scenarioHTML('Cenário A',savedA,null);
+        $('scenarioB').innerHTML=scenarioHTML('Cenário B — atual',current,savedA);
+        const onlyPrevalenceChanged=Math.abs(savedA.p-current.p)>1e-10 && Math.abs(savedA.se-current.se)<1e-10 && Math.abs(savedA.sp-current.sp)<1e-10;
+        $('compareInsight').classList.toggle('show',onlyPrevalenceChanged);
+        $('compareInsight').innerHTML=onlyPrevalenceChanged?'<b>Observe:</b> ao modificar apenas a prevalência, a sensibilidade, a especificidade, a RV+ e a RV− permanecem iguais. O VPP e o VPN mudam porque dependem da probabilidade pré-teste.':'';
+      }
+      updateResult();
+    }
+    function updateResult(){
+      if(!current)return;
+      const positive=resultType==='positive';
+      const post=positive?current.ppv:current.residual;
+      $('resultProb').textContent=pct(post);
+      $('resultBadge').classList.toggle('negative',!positive);
+      $('resultLabel').textContent=positive?'probabilidade de doença':'doença ainda possível';
+      if(positive){
+        const displayedCounts=integerOutcomeCounts(current);
+        $('interpretation').innerHTML=`Entre pessoas com <strong>teste positivo</strong>, aproximadamente <strong>${pct(current.ppv)}</strong> têm a doença. Em frequências naturais: ${countInteger(displayedCounts.vp)} verdadeiros positivos para ${countInteger(displayedCounts.fp)} falsos positivos.`;
+      } else {
+        $('interpretation').innerHTML=`Após um <strong>teste negativo</strong>, a probabilidade de doença cai de <strong>${pct(current.p)}</strong> para <strong>${pct(current.residual)}</strong>. O VPN é ${pct(current.npv)}: essa é a probabilidade de não ter a doença entre os negativos.`;
+      }
+    }
+    syncPair('prevRange','prevNumber',updateSim); syncPair('sensRange','sensNumber',updateSim); syncPair('specRange','specNumber',updateSim);
+    $('popNumber').addEventListener('input',updateSim);
+    document.querySelectorAll('[data-result]').forEach(b=>b.addEventListener('click',()=>{ resultType=b.dataset.result; document.querySelectorAll('[data-result]').forEach(x=>x.classList.toggle('active',x===b)); updateResult(); }));
+
+    const presets={
+      triagem:{p:5,se:95,sp:85,N:1000}, confirmacao:{p:40,se:82,sp:98,N:1000}, equilibrado:{p:20,se:90,sp:90,N:1000}
+    };
+    function loadPreset(name,go=true){ const v=presets[name]; ['prev','sens','spec'].forEach((k,i)=>{ const key=['p','se','sp'][i]; $(k+'Number').value=v[key]; $(k+'Range').value=v[key]; }); $('popNumber').value=v.N; updateSim(); if(go) switchTab('simulacao'); }
+    document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>loadPreset(b.dataset.preset,true)));
+    $('resetSim').addEventListener('click',()=>loadPreset('equilibrado',false));
+    $('saveA').addEventListener('click',()=>{ savedA={...current}; $('saveA').textContent='Cenário A guardado'; updateSim(); });
+
+    function switchTab(id){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===id));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));
+      if(id==='fagan'){ setTimeout(()=>{ syncFaganFromSim(); drawFagan(); },30); }
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+
+    function clearDirectOutputs(){
+      ['dPosTotal','dNegTotal','dDiseaseTotal','dNoDiseaseTotal','dGrandTotal','dSens','dSpec','dPPV','dNPV','dLRP','dLRN','directText','directExtra'].forEach(id=>$(id).textContent='');
+    }
+    function probabilityInterpretation(label,value,text){
+      return `<li><strong>${label}:</strong> ${Number.isFinite(value)?text(pct(value)):'não pode ser calculada com os valores informados.'}</li>`;
+    }
+    function likelihoodInterpretation(label,value,result,decimals){
+      if(!Number.isFinite(value)) return `<li><strong>${label}:</strong> não pode ser calculada com os valores informados.</li>`;
+      const formatted=num(value,decimals), times=value<=1?'vez':'vezes';
+      return `<li><strong>${label}:</strong> A probabilidade de obter um resultado ${result} em um paciente com a doença é <strong>${formatted} ${times}</strong> a probabilidade de obter esse resultado em um paciente sem a doença.</li>`;
+    }
+    function directCalc(){
+      const raw=['dVP','dFP','dFN','dVN'].map(id=>$(id).value.trim());
+      if(raw.some(value=>value==='')){ clearDirectOutputs(); return; }
+      const values=raw.map(Number);
+      if(values.some(value=>!Number.isFinite(value)||value<0||!Number.isInteger(value))){ clearDirectOutputs(); return; }
+      const [vp,fp,fn,vn]=values;
+      const safe=(a,b)=>b? a/b:NaN, se=safe(vp,vp+fn), sp=safe(vn,vn+fp), ppv=safe(vp,vp+fp), npv=safe(vn,vn+fn), lrp=se/(1-sp), lrn=(1-se)/sp, N=vp+fp+fn+vn;
+      $('dPosTotal').textContent=count(vp+fp); $('dNegTotal').textContent=count(fn+vn);
+      $('dDiseaseTotal').textContent=count(vp+fn); $('dNoDiseaseTotal').textContent=count(fp+vn); $('dGrandTotal').textContent=count(N);
+      $('dSens').textContent=pct(se); $('dSpec').textContent=pct(sp); $('dPPV').textContent=pct(ppv); $('dNPV').textContent=pct(npv); $('dLRP').textContent=num(lrp); $('dLRN').textContent=num(lrn,3);
+      $('directText').innerHTML=[
+        probabilityInterpretation('Sensibilidade',se,value=>`Se o paciente tiver a doença, a probabilidade de o teste apresentar resultado positivo é de <strong>${value}</strong>.`),
+        probabilityInterpretation('Especificidade',sp,value=>`Se o paciente não tiver a doença, a probabilidade de o teste apresentar resultado negativo é de <strong>${value}</strong>.`),
+        probabilityInterpretation('VPP',ppv,value=>`Se o resultado do teste for positivo, a probabilidade de o paciente ter a doença é de <strong>${value}</strong>.`),
+        probabilityInterpretation('VPN',npv,value=>`Se o resultado do teste for negativo, a probabilidade de o paciente não ter a doença é de <strong>${value}</strong>.`),
+        likelihoodInterpretation('RV+',lrp,'positivo',2),
+        likelihoodInterpretation('RV−',lrn,'negativo',3)
+      ].join('');
+      $('directExtra').textContent=`Total: ${count(N)} · Prevalência observada: ${pct(safe(vp+fn,N))}.`;
+    }
+    ['dVP','dFP','dFN','dVN'].forEach(id=>{
+      const input=$(id);
+      input.addEventListener('keydown',event=>{
+        if(['.',',','e','E','+','-'].includes(event.key)) event.preventDefault();
+      });
+      input.addEventListener('input',()=>{
+        if(input.value!=='' && Number.isFinite(Number(input.value)) && !Number.isInteger(Number(input.value))){
+          input.value=String(Math.max(0,Math.round(Number(input.value))));
+        }
+        directCalc();
+      });
+    });
+    $('importSim').addEventListener('click',()=>{
+      if(!current)return;
+      const imported=integerOutcomeCounts(current);
+      $('dVP').value=imported.vp; $('dFP').value=imported.fp; $('dFN').value=imported.fn; $('dVN').value=imported.vn;
+      directCalc();
+    });
+
+    // Nomograma de Fagan: probabilidades em escala logit e RV em escala logarítmica.
+    function logit(p){ return Math.log(p/(1-p)); }
+    function faganValues(){ const p=clamp(get('faganPre'),.1,99)/100, lr=clamp(get('faganLR'),.001,1000), odds=p/(1-p), postOdds=odds*lr, post=postOdds/(1+postOdds); return {p,lr,odds,postOdds,post}; }
+    function updateFagan(){ const v=faganValues(); $('faganPost').textContent=pct(v.post); drawFagan(); }
+    $('faganPreRange').addEventListener('input',()=>{ $('faganPre').value=$('faganPreRange').value; updateFagan(); });
+    $('faganPre').addEventListener('input',()=>{ if($('faganPre').value==='')return; $('faganPre').value=clamp(get('faganPre'),.1,99); $('faganPreRange').value=$('faganPre').value; updateFagan(); });
+    $('faganLRRange').addEventListener('input',()=>{ const lr=Math.pow(10,get('faganLRRange')); $('faganLR').value=lr.toPrecision(5); updateFagan(); });
+    $('faganLR').addEventListener('input',()=>{ if($('faganLR').value==='')return; $('faganLR').value=clamp(get('faganLR'),.001,1000); $('faganLRRange').value=Math.log10(get('faganLR')); updateFagan(); });
+    function setFaganLR(lr){ $('faganLR').value=Number(lr).toPrecision(5); $('faganLRRange').value=Math.log10(lr); updateFagan(); }
+    function syncFaganFromSim(){ if(!current)return; const pre=clamp(current.p*100,.1,99); $('faganPre').value=pre.toFixed(1); $('faganPreRange').value=pre; setFaganLR(resultType==='positive'?current.lrp:current.lrn); }
+    $('useLRP').addEventListener('click',()=>{ if(current)setFaganLR(current.lrp); }); $('useLRN').addEventListener('click',()=>{ if(current)setFaganLR(current.lrn); });
+
+    function drawFagan(){
+      const canvas=$('faganCanvas'), ctx=canvas.getContext('2d'), W=canvas.width, H=canvas.height, dpr=window.devicePixelRatio||1;
+      // O canvas possui resolução lógica fixa para manter todas as escalas alinhadas.
+      ctx.clearRect(0,0,W,H); ctx.fillStyle='#f9fcfe'; ctx.fillRect(0,0,W,H);
+      // Mantém as três escalas equidistantes e concentradas no centro,
+      // seguindo a proporção visual do nomograma de Fagan tradicional.
+      const xL=230,xM=450,xR=670,yT=64,yB=790,h=yB-yT, min=.001,max=.99, lo=logit(min), hi=logit(max);
+      const yLeft=p=>yT+(logit(p)-lo)/(hi-lo)*h;
+      const yRight=p=>yT+(hi-logit(p))/(hi-lo)*h;
+      // A escala central ocupa a metade central da altura. Essa geometria
+      // preserva exatamente: logit(pós) = logit(pré) + ln(RV).
+      const yLR=lr=>yT+h/2-(Math.log(lr)/(2*(hi-lo)))*h;
+      ctx.strokeStyle='#17334e'; ctx.lineWidth=2;
+      [xL,xR].forEach(x=>{ctx.beginPath();ctx.moveTo(x,yT);ctx.lineTo(x,yB);ctx.stroke();});
+      ctx.beginPath();ctx.moveTo(xM,yLR(1000));ctx.lineTo(xM,yLR(.001));ctx.stroke();
+      ctx.fillStyle='#15314c'; ctx.textAlign='center'; ctx.font='700 20px system-ui'; ctx.fillText('Probabilidade',xL,32);ctx.fillText('Razão de',xM,24);ctx.fillText('verossimilhança',xM,47);ctx.fillText('Probabilidade',xR,32);
+      ctx.font='600 12px system-ui'; ctx.fillStyle='#65758a'; ctx.fillText('pré-teste (%)',xL,51);ctx.fillText('pós-teste (%)',xR,51);
+      const ps=[.001,.002,.005,.01,.02,.05,.1,.2,.3,.4,.5,.6,.7,.8,.9,.95,.99];
+      const showP=p=>{ const v=p*100; return v<1?v.toLocaleString('pt-BR',{maximumFractionDigits:1}):v.toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+      ctx.font='13px system-ui'; ctx.fillStyle='#1d344e';
+      ps.forEach(p=>{ const yl=yLeft(p),yr=yRight(p); ctx.beginPath();ctx.moveTo(xL-7,yl);ctx.lineTo(xL+7,yl);ctx.moveTo(xR-7,yr);ctx.lineTo(xR+7,yr);ctx.stroke();ctx.textAlign='right';ctx.fillText(showP(p),xL-13,yl+4);ctx.textAlign='left';ctx.fillText(showP(p),xR+13,yr+4); });
+      const lrs=[1000,500,200,100,50,20,10,5,2,1,.5,.2,.1,.05,.02,.01,.005,.002,.001];
+      lrs.forEach(lr=>{ const y=yLR(lr);ctx.beginPath();ctx.moveTo(xM-7,y);ctx.lineTo(xM+7,y);ctx.stroke();ctx.textAlign='left';ctx.fillText(String(lr).replace('.',','),xM+13,y+4); });
+      const v=faganValues(), yl=yLeft(v.p), ym=yLR(v.lr), yr=yRight(v.post);
+      ctx.strokeStyle='#d24343';ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(xL,yl);ctx.lineTo(xR,yr);ctx.stroke();
+      [[xL,yl],[xM,ym],[xR,yr]].forEach(([x,y])=>{ctx.fillStyle='#fff';ctx.strokeStyle='#d24343';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fill();ctx.stroke();});
+      ctx.fillStyle='#a72c2c';ctx.font='700 13px system-ui';ctx.textAlign='center';ctx.fillText(pct(v.p),xL,Math.min(yB-10,yl+23));ctx.fillText(num(v.lr,3),xM,Math.min(yB-10,ym+23));ctx.fillText(pct(v.post),xR,Math.min(yB-10,yr+23));
+    }
+
+    window.addEventListener('resize',drawFagan);
+    updateSim(); directCalc(); updateFagan();
+  })();
+  </script>
+</body>
+</html>
